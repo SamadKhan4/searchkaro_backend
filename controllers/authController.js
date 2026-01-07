@@ -1,20 +1,6 @@
 ﻿const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const nodemailer = require('nodemailer');
 const User = require('../models/User');
-
-// Configure email transporter
-const configureTransporter = () => {
-  return nodemailer.createTransporter({
-    host: process.env.EMAIL_HOST,
-    port: process.env.EMAIL_PORT,
-    secure: false, // true for 465, false for other ports
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS
-    }
-  });
-};
 
 // Generate random 6-digit OTP
 const generateOTP = () => {
@@ -130,39 +116,16 @@ exports.forgotPassword = async (req, res) => {
     const expiry = Date.now() + 5 * 60 * 1000; // 5 minutes
     otpStore.set(email, { otp, expiry });
 
-    // Configure email transporter
-    const transporter = configureTransporter();
-
-    // Define email options
-    const mailOptions = {
-      from: process.env.EMAIL_FROM,
-      to: email,
-      subject: 'Password Reset OTP - SearchKaro',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #333;">Password Reset Request</h2>
-          <p>Hello,</p>
-          <p>You have requested to reset your password. Please use the following OTP to proceed:</p>
-          <div style="background-color: #f5f5f5; padding: 15px; text-align: center; font-size: 24px; letter-spacing: 5px; font-weight: bold; color: #333; margin: 20px 0;">
-            ${otp}
-          </div>
-          <p>This OTP is valid for 5 minutes. If you didn't request this, please ignore this email.</p>
-          <p>Best regards,<br>SearchKaro Team</p>
-        </div>
-      `
-    };
-
-    // Send email
-    await transporter.sendMail(mailOptions);
-
+    // In a real implementation without email, you might return the OTP for testing purposes
+    // or implement another way to deliver it to the user (SMS, etc.)
     res.status(200).json({ 
-      message: `OTP sent successfully to ${email}` 
+      message: 'OTP generated successfully (not sent via email as nodemailer was removed)' 
     });
   } catch (error) {
     console.error('Forgot password error:', error);
     // Clear OTP on error
     otpStore.delete(req.body.email);
-    res.status(500).json({ message: 'Failed to send OTP. Please try again.' });
+    res.status(500).json({ message: 'Failed to generate OTP. Please try again.' });
   }
 };
 
